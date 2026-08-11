@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environments
+venv/
+env/
+
+# Database
+*.sqlite3
+
+# Secrets and Config (CRITICAL)
+.env
+.env.prod
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Media uploads (We don't want receipts in our source code repo)
+media/
