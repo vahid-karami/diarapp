@@ -1,32 +1,29 @@
 from django.db import models
+from django_jalali.db import models as jmodels  # NEW: Import Jalali models
 
 class Project(models.Model):
-    # Define our strict status choices
     class Status(models.TextChoices):
-        PENDING = 'PD', 'Pending'
-        IN_PROGRESS = 'IP', 'In Progress'
-        COMPLETED = 'CP', 'Completed'
-        CANCELLED = 'CC', 'Cancelled'
+        PENDING = 'PD', 'در انتظار'        # Translated to Persian
+        IN_PROGRESS = 'IP', 'در حال انجام' # Translated to Persian
+        COMPLETED = 'CP', 'تکمیل شده'     # Translated to Persian
+        CANCELLED = 'CC', 'لغو شده'       # Translated to Persian
 
     name = models.CharField(max_length=200)
     customer = models.CharField(max_length=100)
     address = models.CharField(max_length=500)
-    start_date = models.DateField()
     
-    # End date can be blank because they might not know when it will finish yet
-    end_date = models.DateField(null=True, blank=True) 
+    # NEW: Changed to jDateField for Shamsi calendar
+    start_date = jmodels.jDateField()
+    end_date = jmodels.jDateField(null=True, blank=True) 
+    
     status = models.CharField(
         max_length=2,
         choices=Status.choices,
         default=Status.PENDING,
     )
-    # Description is optional
     description = models.TextField(blank=True)
-    
-    # Audit timestamps (Auto-managed by Django)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        # This is what shows up in dropdowns and the admin panel
         return f"{self.name} - {self.customer}"
