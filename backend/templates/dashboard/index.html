@@ -1,28 +1,62 @@
 {% extends 'base.html' %}
+{% load jformat %}
 
 {% block content %}
-<div class="row mb-4">
-    <div class="col-12">
-        <h2 class="fw-bold">Financial Overview</h2>
-        <p class="text-muted">Welcome back. Here is the latest data for your projects.</p>
+<div class="row mb-4 align-items-center">
+    <div class="col-md-6 text-center text-md-start">
+        <h2 class="fw-bold text-dark">نمای کلی مالی</h2>
+        <p class="text-muted mb-0">خوش آمدید. در اینجا جدیدترین اطلاعات و هزینه‌های پروژه‌های شما قرار دارد.</p>
+    </div>
+    
+    <div class="col-md-6 text-center text-md-end mt-4 mt-md-0">
+        <a href="{% url 'dashboard:project_create' %}" class="btn btn-outline-primary shadow-sm rounded-pill px-4 fw-bold ms-2">
+            <i class="bi bi-building-add ms-1"></i> پروژه جدید
+        </a>
+        <a href="{% url 'dashboard:expense_create' %}" class="btn btn-primary shadow-sm rounded-pill px-4 fw-bold text-white">
+            <i class="bi bi-plus-circle ms-1"></i> ثبت هزینه
+        </a>
     </div>
 </div>
 
 <div class="row mb-4">
-    <div class="col-md-6 mb-3">
-        <div class="card shadow-sm border-primary">
-            <div class="card-body">
-                <h5 class="card-title text-primary">This Month</h5>
-                <h2 class="display-5">${{ monthly_expenses }}</h2>
+    <div class="col-md-4 mb-3">
+        <div class="card shadow-sm border-0 border-bottom border-primary border-4 h-100">
+            <div class="card-body text-center py-4">
+                <div class="display-6 text-primary mb-2"><i class="bi bi-calendar-event"></i></div>
+                <h5 class="text-muted mb-3">هزینه‌های این ماه</h5>
+                <h3 class="fw-bold text-dark">{{ monthly_expenses }} <span class="fs-6 text-muted">تومان</span></h3>
             </div>
         </div>
     </div>
     
-    <div class="col-md-6 mb-3">
-        <div class="card shadow-sm border-success">
-            <div class="card-body">
-                <h5 class="card-title text-success">All Time Total</h5>
-                <h2 class="display-5">${{ total_expenses }}</h2>
+    <div class="col-md-4 mb-3">
+        <div class="card shadow-sm border-0 border-bottom border-success border-4 h-100">
+            <div class="card-body text-center py-4">
+                <div class="display-6 text-success mb-2"><i class="bi bi-cash-stack"></i></div>
+                <h5 class="text-muted mb-3">کل هزینه‌ها (تمام ادوار)</h5>
+                <h3 class="fw-bold text-dark">{{ total_expenses }} <span class="fs-6 text-muted">تومان</span></h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-3">
+        <div class="card shadow-sm border-0 border-bottom border-info border-4 h-100">
+            <div class="card-body py-4">
+                <h5 class="text-info fw-bold mb-4 text-center">
+                    <i class="bi bi-people-fill ms-1"></i> هزینه‌ها به تفکیک کاربر
+                </h5>
+                <ul class="list-group list-group-flush">
+                    {% for u in user_expenses %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center bg-transparent px-0">
+                        <span class="fw-bold"><i class="bi bi-person text-secondary ms-1"></i> {{ u.user__username }}</span>
+                        <span class="badge bg-info text-dark rounded-pill shadow-sm px-3 py-2">
+                            {{ u.total_spent }} تومان
+                        </span>
+                    </li>
+                    {% empty %}
+                    <li class="list-group-item text-center text-muted border-0">داده‌ای موجود نیست</li>
+                    {% endfor %}
+                </ul>
             </div>
         </div>
     </div>
@@ -30,31 +64,39 @@
 
 <div class="row">
     <div class="col-12">
-        <div class="card shadow-sm">
-            <div class="card-header bg-white">
-                <h5 class="mb-0">5 Most Recent Expenses</h5>
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white border-bottom py-3">
+                <h5 class="mb-0 fw-bold"><i class="bi bi-clock-history text-secondary ms-2"></i> ۵ هزینه اخیر ثبت شده</h5>
             </div>
-            <div class="card-body">
-                <table class="table table-hover mb-0">
-                    <thead>
+            <div class="card-body p-0 table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
                         <tr>
-                            <th>Date</th>
-                            <th>Project</th>
-                            <th>Category</th>
-                            <th>Amount</th>
+                            <th class="py-3 px-4">تاریخ</th>
+                            <th>پروژه</th>
+                            <th>کاربر</th>
+                            <th>دسته‌بندی</th>
+                            <th>مبلغ</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for expense in recent_expenses %}
                         <tr>
-                            <td>{{ expense.date|date:"M d, Y" }}</td>
-                            <td>{{ expense.project.name }}</td>
+                            <td class="px-4">{{ expense.date|jformat:"%Y/%m/%d" }}</td>
+                            <td class="fw-bold">
+                                <a href="{% url 'dashboard:project_detail' expense.project.pk %}" class="text-decoration-none">{{ expense.project.name }}</a>
+                            </td>
+                            <td>
+                                <span class="badge bg-secondary rounded-pill">
+                                    <i class="bi bi-person"></i> {{ expense.user.username|default:"نامشخص" }}
+                                </span>
+                            </td>
                             <td>{{ expense.get_category_display }}</td>
-                            <td class="fw-bold text-danger">-${{ expense.amount }}</td>
+                            <td class="fw-bold text-danger">{{ expense.amount }} تومان</td>
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="4" class="text-center text-muted">No expenses recorded yet.</td>
+                            <td colspan="5" class="text-center text-muted py-4">هیچ هزینه‌ای ثبت نشده است.</td>
                         </tr>
                         {% endfor %}
                     </tbody>
