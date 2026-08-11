@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+{% load jformat %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2 class="fw-bold">گزارش‌گیری هزینه‌ها</h2>
+        <p class="text-muted">فیلتر کردن و تحلیل هزینه‌ها بر اساس نیاز شما.</p>
+    </div>
+</div>
+
+<div class="card shadow-sm mb-4 border-secondary">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label">پروژه</label>
+                <select name="project" class="form-select">
+                    <option value="">همه پروژه‌ها</option>
+                    {% for project in projects %}
+                    <option value="{{ project.id }}" {% if request.GET.project == project.id|stringformat:"s" %}selected{% endif %}>{{ project.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="col-md-2">
+                <label class="form-label">دسته‌بندی</label>
+                <select name="category" class="form-select">
+                    <option value="">همه</option>
+                    {% for code, name in categories %}
+                    <option value="{{ code }}" {% if request.GET.category == code %}selected{% endif %}>{{ name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label">کاربر</label>
+                <select name="user" class="form-select">
+                    <option value="">همه</option>
+                    {% for user in users %}
+                    <option value="{{ user.id }}" {% if request.GET.user == user.id|stringformat:"s" %}selected{% endif %}>{{ user.username }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label">از تاریخ</label>
+                <input type="text" name="start_date" class="form-control" placeholder="1403-01-01" value="{{ request.GET.start_date }}">
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label">تا تاریخ</label>
+                <input type="text" name="end_date" class="form-control" placeholder="1403-12-29" value="{{ request.GET.end_date }}">
+            </div>
+
+            <div class="col-md-1 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100">فیلتر</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="alert alert-success fs-5 shadow-sm">
+    مجموع هزینه‌های فیلتر شده: <strong>{{ filtered_total }} تومان</strong>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body table-responsive">
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr>
+                    <th>تاریخ</th>
+                    <th>پروژه</th>
+                    <th>کاربر</th>
+                    <th>دسته‌بندی</th>
+                    <th>شرح</th>
+                    <th>مبلغ</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for expense in expenses %}
+                <tr>
+                    <td>{{ expense.date|jformat:"%Y/%m/%d" }}</td>
+                    <td>{{ expense.project.name }}</td>
+                    <td>{{ expense.user.username|default:"نامشخص" }}</td>
+                    <td>{{ expense.get_category_display }}</td>
+                    <td>{{ expense.description }}</td>
+                    <td class="fw-bold text-danger">{{ expense.amount }} تومان</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center text-muted">هیچ هزینه‌ای یافت نشد.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

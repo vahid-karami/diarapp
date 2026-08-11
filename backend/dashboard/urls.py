@@ -5,4 +5,5 @@ app_name = 'dashboard'
 
 urlpatterns = [
     path('', views.DashboardView.as_view(), name='index'),
+    path('reports/', views.ReportView.as_view(), name='reports'), # NEW: Reports route
 ]

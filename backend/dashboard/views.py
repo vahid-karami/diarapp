@@ -1,40 +1,55 @@
-from django.views.generic import TemplateView
+from django.views.generic import TemplateView, ListView  # NEW: Import ListView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Sum
+from django.contrib.auth import get_user_model       # NEW: Fetch CustomUser securely
+from projects.models import Project                  # NEW: Import Project model
 from expenses.models import Expense
-import jdatetime  # NEW: Import Jalali datetime
+import jdatetime
 
-class DashboardView(LoginRequiredMixin, TemplateView):
-    template_name = 'dashboard/index.html'
+User = get_user_model()
+
+# ... (Keep your existing DashboardView code here) ...
+
+class ReportView(LoginRequiredMixin, ListView):
+    model = Expense
+    template_name = 'dashboard/reports.html'
+    context_object_name = 'expenses'
+
+    def get_queryset(self):
+        # Start with all expenses, highly optimized
+        queryset = super().get_queryset().select_related('project', 'user').order_by('-date')
+        
+        # Capture the form inputs from the URL (e.g., ?project=1&category=WK)
+        project_id = self.request.GET.get('project')
+        category = self.request.GET.get('category')
+        user_id = self.request.GET.get('user')
+        start_date = self.request.GET.get('start_date')
+        end_date = self.request.GET.get('end_date')
+
+        # Apply database filters dynamically
+        if project_id:
+            queryset = queryset.filter(project_id=project_id)
+        if category:
+            queryset = queryset.filter(category=category)
+        if user_id:
+            queryset = queryset.filter(user_id=user_id)
+        if start_date:
+            queryset = queryset.filter(date__gte=start_date) # gte = Greater Than or Equal
+        if end_date:
+            queryset = queryset.filter(date__lte=end_date)   # lte = Less Than or Equal
+            
+        return queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         
-        # Grab the current Shamsi date (e.g., 1403-05-20)
-        now = jdatetime.date.today()
+        # Pass the database options to populate our HTML dropdowns
+        context['projects'] = Project.objects.all()
+        context['categories'] = Expense.Category.choices
+        context['users'] = User.objects.all()
         
-        # 1. Calculate all-time total expenses
-        total = Expense.objects.aggregate(Sum('amount'))['amount__sum']
-        context['total_expenses'] = total or 0
-        
-        # 2. Calculate this month's expenses using the Shamsi year and month
-        monthly = Expense.objects.filter(
-            date__year=now.year, 
-            date__month=now.month
-        ).aggregate(Sum('amount'))['amount__sum']
-        context['monthly_expenses'] = monthly or 0
-
-        # 3. NEW: Group expenses by User
-        # This translates to: SELECT user, SUM(amount) GROUP BY user
-        user_expenses = Expense.objects.values('user__username').annotate(
-            total_spent=Sum('amount')
-        ).order_by('-total_spent')
-        
-        context['user_expenses'] = user_expenses
-        
-        # 4. Fetch the 5 most recent expenses
-        context['recent_expenses'] = Expense.objects.select_related(
-            'project', 'user'
-        ).order_by('-date')[:5]
+        # Calculate the dynamic total for the filtered results
+        total = self.get_queryset().aggregate(Sum('amount'))['amount__sum']
+        context['filtered_total'] = total or 0
         
         return context
