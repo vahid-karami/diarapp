@@ -65,6 +65,7 @@
                     <th>دسته‌بندی</th>
                     <th>شرح</th>
                     <th>مبلغ</th>
+                    <th class="text-center">رسید</th>
                     <th class="text-center">عملیات</th>
                 </tr>
             </thead>
@@ -76,6 +77,17 @@
                     <td>{{ expense.get_category_display }}</td>
                     <td class="text-muted">{{ expense.description }}</td>
                     <td class="fw-bold text-danger">{{ expense.amount }} تومان</td>
+                    
+                    <td class="text-center">
+                        {% if expense.receipt %}
+                            <a href="{{ expense.receipt.url }}" target="_blank" class="btn btn-sm btn-outline-info rounded-pill px-3" title="مشاهده رسید">
+                                <i class="bi bi-image"></i> فایل
+                            </a>
+                        {% else %}
+                            <span class="text-muted small">ندارد</span>
+                        {% endif %}
+                    </td>
+
                     <td class="text-center">
                         <a href="{% url 'dashboard:expense_edit' expense.pk %}" class="btn btn-sm btn-outline-primary rounded-circle" title="ویرایش">
                             <i class="bi bi-pencil-fill"></i>
@@ -87,7 +99,7 @@
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="6" class="text-center text-muted py-5">هیچ هزینه‌ای برای این پروژه ثبت نشده است.</td>
+                    <td colspan="7" class="text-center text-muted py-5">هیچ هزینه‌ای برای این پروژه ثبت نشده است.</td>
                 </tr>
                 {% endfor %}
             </tbody>

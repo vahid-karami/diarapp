@@ -1,44 +1,35 @@
 services:
   db:
-    image: postgres:16-alpine
+    image: postgres:15
     volumes:
-      - postgres_data:/var/lib/postgresql/data/
+      - postgres_data:/var/lib/postgresql/data
     environment:
-      - POSTGRES_DB=diarapp_db
-      - POSTGRES_USER=diarapp_user
-      - POSTGRES_PASSWORD=diarapp_password
-    networks:
-      - diarapp_network
+      - POSTGRES_DB=diarapp
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    restart: always
 
   web:
     build: .
-    command: bash -c "cd backend && python manage.py runserver 0.0.0.0:8000"
+    command: python backend/manage.py runserver 0.0.0.0:8000
     volumes:
       - .:/app
-    environment:
-      - POSTGRES_DB=diarapp_db
-      - POSTGRES_USER=diarapp_user
-      - POSTGRES_PASSWORD=diarapp_password
-      - POSTGRES_HOST=db
+      - media_data:/app/backend/media  # NEW: Persist receipts safely
+    ports:
+      - "8000:8000"
     depends_on:
       - db
-    networks:
-      - diarapp_network
 
   nginx:
-    image: nginx:alpine
+    image: nginx:1.31.3-alpine
     ports:
       - "80:80"
     volumes:
       - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - media_data:/app/backend/media  # NEW: Allow Nginx to read the receipts
     depends_on:
       - web
-    networks:
-      - diarapp_network
-
-networks:
-  diarapp_network:
-    driver: bridge
 
 volumes:
   postgres_data:
+  media_data:  # NEW: Register the persistent volume for media
