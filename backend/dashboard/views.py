@@ -10,6 +10,7 @@ from projects.models import Project
 from expenses.models import Expense
 from .forms import ProjectForm, ExpenseForm
 import jdatetime
+from django.contrib.auth.views import LoginView  # NEW: Import Django LoginView
 
 User = get_user_model()
 
@@ -195,3 +196,14 @@ class ExpenseDeleteView(LoginRequiredMixin, DeleteView):
     def get_success_url(self):
         # After deleting, go back to the specific project page
         return reverse('dashboard:project_detail', kwargs={'pk': self.object.project.pk})
+
+
+# -----------------------------------------
+# 6. CUSTOM LOGIN VIEW
+# -----------------------------------------
+class CustomLoginView(LoginView):
+    template_name = 'dashboard/login.html'
+    redirect_authenticated_user = True
+
+    def get_success_url(self):
+        return reverse_lazy('dashboard:index')

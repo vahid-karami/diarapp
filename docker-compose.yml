@@ -3,10 +3,8 @@ services:
     image: postgres:15
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    environment:
-      - POSTGRES_DB=diarapp
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
+    env_file:
+      - .env
     restart: always
 
   web:
@@ -14,9 +12,11 @@ services:
     command: python backend/manage.py runserver 0.0.0.0:8000
     volumes:
       - .:/app
-      - media_data:/app/backend/media  # NEW: Persist receipts safely
+      - media_data:/app/backend/media
     ports:
       - "8000:8000"
+    env_file:
+      - .env
     depends_on:
       - db
 
@@ -26,10 +26,10 @@ services:
       - "80:80"
     volumes:
       - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
-      - media_data:/app/backend/media  # NEW: Allow Nginx to read the receipts
+      - media_data:/app/backend/media
     depends_on:
       - web
 
 volumes:
   postgres_data:
-  media_data:  # NEW: Register the persistent volume for media
+  media_data:
