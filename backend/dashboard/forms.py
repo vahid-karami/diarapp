@@ -1,34 +1,25 @@
 from django import forms
-from projects.models import Project
 from expenses.models import Expense
+from projects.models import Project
 
 class BootstrapForm(forms.ModelForm):
-    """A custom base class that automatically adds Bootstrap CSS to all form fields"""
+    """
+    Base form to automatically apply Bootstrap CSS classes to all fields.
+    """
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for field_name, field in self.fields.items():
-            if isinstance(field.widget, forms.CheckboxInput):
-                field.widget.attrs['class'] = 'form-check-input shadow-sm'
-            elif isinstance(field.widget, forms.Select):
-                field.widget.attrs['class'] = 'form-select shadow-sm'
-            else:
-                field.widget.attrs['class'] = 'form-control shadow-sm'
-
-class ProjectForm(BootstrapForm):
-    class Meta:
-        model = Project
-        fields = ['name', 'customer', 'address', 'start_date', 'end_date', 'status', 'description']
-        widgets = {
-            'start_date': forms.TextInput(attrs={'placeholder': 'مثال: 1403-05-20', 'dir': 'ltr'}),
-            'end_date': forms.TextInput(attrs={'placeholder': 'مثال: 1403-12-29', 'dir': 'ltr'}),
-            'description': forms.Textarea(attrs={'rows': 3}),
-        }
+            old_class = field.widget.attrs.get('class', '')
+            field.widget.attrs['class'] = f'form-control {old_class}'.strip()
 
 class ExpenseForm(BootstrapForm):
     class Meta:
         model = Expense
-        fields = ['project', 'date', 'category', 'amount', 'description', 'receipt']
-        widgets = {
-            'date': forms.TextInput(attrs={'placeholder': 'مثال: 1403-05-20', 'dir': 'ltr'}),
-            'description': forms.Textarea(attrs={'rows': 2}),
-        }
+        # Removed 'category' and updated to match the real Expense model
+        fields = ['title', 'project', 'amount', 'date', 'receipt', 'description']
+
+class ProjectForm(BootstrapForm):
+    class Meta:
+        model = Project
+        # Updated to match the real Project model
+        fields = ['name', 'customer', 'address', 'start_date', 'end_date', 'status', 'description']

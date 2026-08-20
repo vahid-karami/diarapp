@@ -1,29 +1,29 @@
 from django.db import models
-from django_jalali.db import models as jmodels  # NEW: Import Jalali models
 
 class Project(models.Model):
-    class Status(models.TextChoices):
-        PENDING = 'PD', 'در انتظار'        # Translated to Persian
-        IN_PROGRESS = 'IP', 'در حال انجام' # Translated to Persian
-        COMPLETED = 'CP', 'تکمیل شده'     # Translated to Persian
-        CANCELLED = 'CC', 'لغو شده'       # Translated to Persian
+    STATUS_CHOICES = [
+        ('pending', 'در انتظار'),
+        ('in_progress', 'در حال انجام'),
+        ('completed', 'تکمیل شده'),
+        ('canceled', 'لغو شده'),
+    ]
 
-    name = models.CharField(max_length=200)
-    customer = models.CharField(max_length=100)
-    address = models.CharField(max_length=500)
-    
-    # NEW: Changed to jDateField for Shamsi calendar
-    start_date = jmodels.jDateField()
-    end_date = jmodels.jDateField(null=True, blank=True) 
-    
+    name = models.CharField(max_length=255, verbose_name="نام پروژه")
+    customer = models.CharField(max_length=255, verbose_name="مشتری / کارفرما")
+    address = models.TextField(verbose_name="آدرس", blank=True, null=True)
+    start_date = models.DateField(verbose_name="تاریخ شروع")
+    end_date = models.DateField(verbose_name="تاریخ پایان", blank=True, null=True)
     status = models.CharField(
-        max_length=2,
-        choices=Status.choices,
-        default=Status.PENDING,
+        max_length=20, 
+        choices=STATUS_CHOICES, 
+        default='pending', 
+        verbose_name="وضعیت"
     )
-    description = models.TextField(blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    description = models.TextField(verbose_name="توضیحات", blank=True, null=True)
+
+    class Meta:
+        verbose_name = "پروژه"
+        verbose_name_plural = "پروژه‌ها"
 
     def __str__(self):
-        return f"{self.name} - {self.customer}"
+        return self.name

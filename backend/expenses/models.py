@@ -1,33 +1,42 @@
 from django.db import models
-from django.conf import settings
 from projects.models import Project
-from django_jalali.db import models as jmodels # NEW: Import Jalali models
 
 class Expense(models.Model):
-    class Category(models.TextChoices):
-        MATERIAL = 'MT', 'مصالح'        # Material
-        WORKER = 'WK', 'دستمزد کارگر'   # Worker
-        TRANSPORT = 'TR', 'حمل و نقل'   # Transportation
-        EQUIPMENT = 'EQ', 'تجهیزات'      # Equipment
-        FOOD = 'FD', 'غذا'             # Food
-        FUEL = 'FL', 'سوخت'            # Fuel
-        OTHER = 'OT', 'سایر'           # Other
-
-    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='expenses')
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
+    title = models.CharField(max_length=255, verbose_name="عنوان هزینه")
     
-    # NEW: Changed to jDateField for Shamsi
-    date = jmodels.jDateField()
-    category = models.CharField(max_length=2, choices=Category.choices)
-    description = models.CharField(max_length=255)
+    # Links the expense to a specific project
+    project = models.ForeignKey(
+        Project, 
+        on_delete=models.CASCADE, 
+        related_name='expenses', 
+        verbose_name="پروژه مربوطه"
+    )
     
-    # NEW: Changed to BigIntegerField for Toman (No decimals needed)
-    amount = models.BigIntegerField()
+    # Amount is optional in the form, but defaults to 0 in the database
+    amount = models.DecimalField(
+        max_digits=12, 
+        decimal_places=0, 
+        default=0, 
+        verbose_name="مبلغ (تومان/ریال)"
+    )
     
-    receipt = models.ImageField(upload_to='receipts/%Y/%m/', null=True, blank=True)
+    date = models.DateField(verbose_name="تاریخ پرداخت")
+    
+    receipt = models.ImageField(
+        upload_to='receipts/', 
+        blank=True, 
+        null=True, 
+        verbose_name="تصویر فاکتور / رسید"
+    )
+    
+    description = models.TextField(blank=True, null=True, verbose_name="توضیحات")
+    
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "هزینه"
+        verbose_name_plural = "هزینه‌ها"
+        ordering = ['-date'] # Show newest expenses first
 
     def __str__(self):
-        # Adjusted string representation to show 'Toman' (تومان)
-        return f"{self.date} - {self.get_category_display()} - {self.amount} تومان"
+        return f"{self.title} - {self.amount}"

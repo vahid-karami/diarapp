@@ -3,6 +3,11 @@ from .models import Expense
 
 @admin.register(Expense)
 class ExpenseAdmin(admin.ModelAdmin):
-    list_display = ('date', 'project', 'category', 'amount', 'user')
-    list_filter = ('category', 'project', 'date')
-    search_fields = ('description', 'project__name')
+    # Determine which columns show up in the admin table
+    list_display = ('title', 'project', 'amount', 'date')
+    
+    # Add filters to the right sidebar in the admin panel
+    list_filter = ('project', 'date')
+    
+    # Add a search bar to search by these text fields
+    search_fields = ('title', 'description')

@@ -8,12 +8,17 @@ from dashboard.views import CustomLoginView
 urlpatterns = [
     path('admin/', admin.site.urls),
     
-    # NEW: Custom Login & Logout Routes
+    # Custom Login & Logout Routes
     path('accounts/login/', CustomLoginView.as_view(), name='login'),
     path('accounts/logout/', LogoutView.as_view(next_page='login'), name='logout'),
     
+    # App Routes
     path('', include('dashboard.urls')),
+    path('expenses/', include('expenses.urls')),  # NEW: Registered expenses namespace
+    path('projects/', include('projects.urls')),  # NEW: Registered projects namespace
 ]
 
-if settings.DEBUG:
+# Serve media files in development (and via Docker volume in production)
+if settings.DEBUG or True: # Ensuring static/media resolve properly
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

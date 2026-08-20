@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10 col-lg-8">
+        <div class="card shadow-sm border-0 rounded-4">
+            <div class="card-header bg-primary text-white rounded-top-4 p-3 d-flex align-items-center">
+                <i class="bi bi-folder-plus fs-4 ms-2"></i>
+                <h5 class="mb-0 fw-bold">ثبت پروژه جدید</h5>
+            </div>
+            <div class="card-body p-4">
+                
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        {% for field in form %}
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold small text-secondary">
+                                {{ field.label }}
+                                {% if not field.field.required %}
+                                    <span class="text-muted fw-normal">(اختیاری)</span>
+                                {% endif %}
+                            </label>
+                            
+                            {{ field }}
+                            
+                            {% if field.errors %}
+                                <div class="text-danger small mt-1">{{ field.errors|striptags }}</div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="d-flex justify-content-end mt-4 border-top pt-3">
+                        <a href="{% url 'dashboard:index' %}" class="btn btn-light px-4 me-2">انصراف</a>
+                        <button type="submit" class="btn btn-primary px-5 fw-bold shadow-sm">
+                            <i class="bi bi-save ms-1"></i> ثبت پروژه
+                        </button>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<link rel="stylesheet" href="https://unpkg.com/persian-datepicker@1.2.0/dist/css/persian-datepicker.min.css">
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://unpkg.com/persian-date@1.1.0/dist/persian-date.min.js"></script>
+<script src="https://unpkg.com/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js"></script>
+
+<script>
+    $(document).ready(function() {
+        $('.persian-date-picker').persianDatepicker({
+            format: 'YYYY/MM/DD',
+            initialValue: true,
+            initialValueType: 'persian',
+            autoClose: true,
+            calendar: {
+                persian: {
+                    locale: 'fa'
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}
