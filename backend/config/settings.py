@@ -99,8 +99,14 @@ USE_TZ = True
 
 
 # Static files (CSS, JavaScript, Images)
+# Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'static'
+
+# NEW: Tell Django where your custom source files live
+STATICFILES_DIRS = [
+    BASE_DIR / 'custom_static',
+]
 
 # Media files (Uploaded by users like Receipts)
 MEDIA_URL = '/media/'
